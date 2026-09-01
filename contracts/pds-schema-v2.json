@@ -1,0 +1,137 @@
+{
+  "version": "2.0",
+  "timezone": "Asia/Seoul",
+  "dateRules": {
+    "storage": "timestamps are stored as timestamptz (UTC internally by PostgreSQL)",
+    "display": "Asia/Seoul",
+    "overdue": "task is overdue when deleted=false, status!=done, due_date is earlier than today in Asia/Seoul",
+    "durationUnit": "minutes"
+  },
+  "entities": {
+    "categories": [
+      "id",
+      "name",
+      "emoji",
+      "color",
+      "sort_order",
+      "is_active",
+      "created_at"
+    ],
+    "plans": [
+      "id",
+      "title",
+      "description",
+      "category_id",
+      "start_date",
+      "end_date",
+      "priority",
+      "success_mode",
+      "success_threshold",
+      "estimated_minutes",
+      "carry_improvement_enabled",
+      "carried_improvement",
+      "archived",
+      "created_at",
+      "updated_at"
+    ],
+    "plan_revisions": [
+      "id",
+      "plan_id",
+      "revision_no",
+      "title",
+      "description",
+      "category_id",
+      "start_date",
+      "end_date",
+      "priority",
+      "success_mode",
+      "success_threshold",
+      "estimated_minutes",
+      "saved_at",
+      "change_note"
+    ],
+    "tasks": [
+      "id",
+      "plan_id",
+      "title",
+      "description",
+      "category_id",
+      "due_date",
+      "priority",
+      "tags",
+      "estimated_minutes",
+      "status",
+      "completed_at",
+      "completion_cycle",
+      "deleted",
+      "created_at",
+      "updated_at"
+    ],
+    "execution_records": [
+      "id",
+      "plan_id",
+      "task_id",
+      "started_at",
+      "ended_at",
+      "actual_minutes",
+      "blocked_reason",
+      "note",
+      "created_at"
+    ],
+    "completion_events": [
+      "id",
+      "plan_id",
+      "task_id",
+      "completion_cycle",
+      "idempotency_key",
+      "completed_at"
+    ],
+    "reviews": [
+      "id",
+      "plan_id",
+      "period_start",
+      "period_end",
+      "task_count",
+      "completed_count",
+      "overdue_count",
+      "blocked_count",
+      "estimated_minutes",
+      "actual_minutes",
+      "difference_minutes",
+      "success_rate",
+      "success_threshold",
+      "is_success",
+      "improvement",
+      "carry_to_next_plan",
+      "created_at_seoul",
+      "created_at"
+    ],
+    "security_checks": [
+      "id",
+      "test_text",
+      "created_at"
+    ]
+  },
+  "relationships": [
+    "plans.category_id -> categories.id",
+    "plan_revisions.plan_id -> plans.id",
+    "tasks.plan_id -> plans.id",
+    "tasks.category_id -> categories.id",
+    "execution_records.plan_id -> plans.id",
+    "execution_records.task_id -> tasks.id",
+    "completion_events.task_id -> tasks.id",
+    "reviews.plan_id -> plans.id"
+  ],
+  "idempotency": {
+    "completion": "complete_task RPC locks the task row; if already done it does not insert a second completion event. unique(task_id, completion_cycle) is the database-level guard. reopen_task increments completion_cycle."
+  },
+  "reviewRules": {
+    "task_count": "non-deleted tasks in the plan",
+    "completed_count": "non-deleted tasks whose current status is done",
+    "overdue_count": "non-deleted, not-done tasks with due_date before Seoul today",
+    "blocked_count": "distinct tasks having at least one execution record with a non-empty blocked_reason",
+    "estimated_minutes": "sum of estimated_minutes of target tasks, default 0",
+    "actual_minutes": "sum of actual_minutes of execution records for target tasks, default 0",
+    "difference_minutes": "actual_minutes - estimated_minutes"
+  }
+}
